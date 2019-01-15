@@ -73,27 +73,22 @@ app.get("/scrape", function (req, res) {
         .text();
 
       //if article already exists, don't recreate it
-      db.Article.find({ title: result.title })
-        .then(function () {
-          bAlreadyExists = true;
-          console.log("HERE TRUE");
-        })
-        .catch(function (err) {
-          res.json(err);
-        })
-
-      if (!bAlreadyExists) {
-        // Create a new Article using the `result` object built from scraping
-        db.Article.create(result)
-          .then(function (dbArticle) {
-            // View the added result in the console
-            console.log(dbArticle);
-          })
-          .catch(function (err) {
-            // If an error occurred, log it
-            console.log(err);
-          });
-      }
+      db.Article.findOne({ title: result.title }, function (err, article) {
+        if (article) {
+          console.log("Article already exists in database");
+        }
+        else {
+          db.Article.create(result)
+            .then(function (dbArticle) {
+              // View the added result in the console
+              console.log(dbArticle);
+            })
+            .catch(function (err) {
+              // If an error occurred, log it
+              console.log(err);
+            });
+        }
+      })
     });
 
   });
