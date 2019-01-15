@@ -29,19 +29,35 @@ $.getJSON("/savedArticles", function (data) {
 });
 
 $("#scrape").on("click", function () {
+  var prevLength = 0;
+  var finalLength = 0;
+  $.ajax({
+    method: "GET",
+    url: "/articles",
+    success: function (data) {
+      prevLength = data.length;
+    }
+  });
   $.ajax({
     method: "GET",
     url: "/scrape",
-    success: function(data)
-    {
-      console.log("HERE" + data)
-      $("#modalBody").text("10 articles were added.");
-      $("#myModal").modal("show");
-      setTimeout(function() {
+    success: function (data) {
+      setTimeout(function () {
         window.location.href = "/";
       }, 3000);
     }
-  })  
+  }).then(function () {
+    $.ajax({
+      method: "GET",
+      url: "/articles",
+      success: function (data) {
+        finalLength = data.length;
+        var diff = finalLength - prevLength;
+        $("#modalBody").text(diff + " articles were added.");
+        $("#myModal").modal("show");
+      }
+    });
+  });
 });
 
 // Whenever someone clicks a p tag

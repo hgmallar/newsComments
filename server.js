@@ -54,8 +54,6 @@ app.get("/scrape", function (req, res) {
       // Save an empty result object
       var result = {};
 
-      bAlreadyExists = false;
-
       // Add the text and href of every link, and save them as properties of the result object
       result.title = $(this)
         .children("h2")
@@ -75,7 +73,7 @@ app.get("/scrape", function (req, res) {
       //if article already exists, don't recreate it
       db.Article.findOne({ title: result.title }, function (err, article) {
         if (article) {
-          console.log("Article already exists in database");
+          console.log("Article with that title already exists in database");
         }
         else {
           db.Article.create(result)
@@ -89,11 +87,12 @@ app.get("/scrape", function (req, res) {
             });
         }
       })
-    });
+    })
 
-  });
-  // Send a message to the client
-  res.send("Scrape Complete");
+  }).then(function () {
+    // Send a message to the client
+    res.send("Scrape Complete");
+  })
 });
 
 // Route for getting all Articles from the db
