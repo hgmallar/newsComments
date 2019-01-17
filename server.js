@@ -70,23 +70,15 @@ app.get("/scrape", function (req, res) {
         .first()
         .text();
 
-      //if article already exists, don't recreate it
-      db.Article.findOne({ title: result.title }, function (err, article) {
-        if (article) {
-          console.log("Article with that title already exists in database");
-        }
-        else {
-          db.Article.create(result)
-            .then(function (dbArticle) {
-              // View the added result in the console
-              console.log(dbArticle);
-            })
-            .catch(function (err) {
-              // If an error occurred, log it
-              console.log(err);
-            });
-        }
-      })
+      db.Article.create(result)
+        .then(function (dbArticle) {
+          // View the added result in the console
+          console.log(dbArticle);
+        })
+        .catch(function (err) {
+          // If an error occurred, log it
+          console.log(err);
+        });
     })
 
   }).then(function () {
@@ -97,7 +89,7 @@ app.get("/scrape", function (req, res) {
 
 // Route for getting all Articles from the db
 app.get("/articles", function (req, res) {
-  db.Article.find({}).then(function (dbArticle) {
+  db.Article.find({}).sort({ _id: -1 }).then(function (dbArticle) {
     res.json(dbArticle);
   })
     .catch(function (err) {
@@ -107,7 +99,7 @@ app.get("/articles", function (req, res) {
 
 // Route for getting all Articles from the db
 app.get("/savedArticles", function (req, res) {
-  db.Article.find({ saved: true }).then(function (dbArticle) {
+  db.Article.find({ saved: true }).sort({ _id: -1 }).then(function (dbArticle) {
     res.json(dbArticle);
   })
     .catch(function (err) {
@@ -149,7 +141,7 @@ app.post("/articles/:id", function (req, res) {
 
 app.post("/save/:id", function (req, res) {
   // Updates the saved value for one article using the req.params.id
-  db.Article.update({ _id: req.params.id }, { saved: true }, function (dbArticle) {
+  db.Article.updateOne({ _id: req.params.id }, { saved: true }, function (dbArticle) {
     res.json(dbArticle);
   })
     .catch(function (err) {
@@ -159,8 +151,26 @@ app.post("/save/:id", function (req, res) {
 
 app.post("/deletesave/:id", function (req, res) {
   // Updates the saved value for one article using the req.params.id
-  db.Article.update({ _id: req.params.id }, { saved: false }, function (dbArticle) {
+  db.Article.updateOne({ _id: req.params.id }, { saved: false }, function (dbArticle) {
     res.json(dbArticle);
+  })
+    .catch(function (err) {
+      res.json(err);
+    });
+});
+
+app.put("/articles/:id", function (req, res) {
+  db.Article.updateOne({ note: req.params.id }, { $unset: { note: req.params.id } }, function (dbArticle) {
+    res.json(dbArticle);
+  })
+    .catch(function (err) {
+      res.json(err);
+    });
+});
+
+app.delete("/notes/:id", function (req, res) {
+  db.Note.deleteOne({ _id: req.params.id }, function (dbNote) {
+    res.json(dbNote);
   })
     .catch(function (err) {
       res.json(err);

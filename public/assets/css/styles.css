@@ -35,27 +35,18 @@ button {
     color: lightgrey;
     text-decoration: underline;
 }
-      
-#wrapper {
-    margin: 0 20px;
-}
-
-textarea, input {
-    display: block;
-    width: 100%;
-    background-color: #FCF5C7;
+  
+.borderOn {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    color: #656466;
+    padding: 20px;
 }
 
 a:hover {
     font-weight: bolder;
 }
 
-input {
-    height: 36px;
-    font-size: 24px;
-}
-
-textarea {
-    height: 200px;
-    font-size: 18px;
+.deletenote{
+    cursor: pointer;
 }
