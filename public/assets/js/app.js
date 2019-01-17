@@ -1,8 +1,11 @@
+//function to display notes in modal
 function displayNotes(data) {
+  //clear the notes
   $("#notesBody").empty();
-  if (data.note) {
+  //if a note array exists
+  if (data.note.length !== 0) {
     for (var i = 0; i < data.note.length; i++) {
-      // Place the body of the note in the body textarea
+      // get the body of the note and the associated x that will allow you to delete the note
       let noteP = $("<h6>").text(data.note[i].body);
       let span = $("<span>");
       span.addClass("deletenote");
@@ -33,7 +36,7 @@ $.getJSON("/articles", function (data) {
   }
 });
 
-// Grab the articles as a json
+// Grab the saved articles as a json
 $.getJSON("/savedArticles", function (data) {
   // For each one
   for (var i = 0; i < data.length; i++) {
@@ -48,33 +51,30 @@ $.getJSON("/savedArticles", function (data) {
   }
 });
 
+//if scrape is clicked
 $("#scrape").on("click", function () {
   var prevLength = 0;
   var finalLength = 0;
+  //get the original number of articles
   $.ajax({
     method: "GET",
     url: "/articles",
     success: function (data) {
       prevLength = data.length;
     }
-  });
-  $.ajax({
-    method: "GET",
-    url: "/scrape",
-    success: function (data) {
-      setTimeout(function () {
-        window.location.href = "/";
-      }, 3000);
-    }
   }).then(function () {
+    //then scrape the new articles, calculate the difference in number of articles and display, then reload the index page
     $.ajax({
       method: "GET",
-      url: "/articles",
+      url: "/scrape",
       success: function (data) {
-        finalLength = data.length;
+        finalLength = data.countNum;
         var diff = finalLength - prevLength;
         $("#modalBody").text(diff + " articles were added.");
         $("#myModal").modal("show");
+        setTimeout(function () {
+          window.location.href = "/";
+        }, 3000);
       }
     });
   });
@@ -85,7 +85,7 @@ $(document).on("click", ".saveart", function () {
   // Grab the id associated with the article from the submit button
   var thisId = $(this).attr("data-id");
 
-  // Run a POST request to update saved 
+  // Run a POST request to update saved to true
   $.ajax({
     method: "POST",
     url: "/save/" + thisId,
@@ -97,23 +97,23 @@ $(document).on("click", ".deletesave", function () {
   // Grab the id associated with the article from the submit button
   var thisId = $(this).attr("data-id");
 
-  // Run a POST request to update saved 
+  // Run a POST request to update saved to false
   $.ajax({
     method: "POST",
     url: "/deletesave/" + thisId,
   })
-    // With that done
+    // With that done, reload the saved page
     .then(function (data) {
       window.location.href = "/saved";
     });
 });
 
-// When you click the saveart button
+// When you click the savenote button
 $(document).on("click", ".savenote", function () {
   // Grab the id associated with the article from the submit button
   var thisId = $(this).attr("data-id");
 
-  // Run a POST request to update saved 
+  // Run a POST request to create a note document and update the article with the id of the note 
   $.ajax({
     method: "POST",
     url: "/articles/" + thisId,
@@ -137,10 +137,8 @@ $(document).on("click", ".articlenote", function () {
     method: "GET",
     url: "/articles/" + thisId
   })
-    // With that done, add the note information to the page
+    // With that done, add the note information to the modal and display all notes
     .then(function (data) {
-      console.log(data);
-      // If there's a note in the article
       displayNotes(data);
     });
   $(".savenote").attr("data-id", thisId);
@@ -149,21 +147,23 @@ $(document).on("click", ".articlenote", function () {
 
 });
 
-// When you click the articlenote button
+// When you click the deletenote button
 $(document).on("click", ".deletenote", function () {
   // Grab the id associated with the article from the submit button
   var thisId = $(this).attr("data-id");
   var articleId = $(".savenote").attr("data-id");
+  //update the notes array in the article to remove the note objectid
   $.ajax({
     method: "PUT",
     url: "/articles/" + articleId + "/" + thisId
   })
     .then(function (data) {
+      //then delete the note document
       $.ajax({
         method: "DELETE",
         url: "/notes/" + thisId
       })
-      //delete the deleted note from the data
+      //delete the deleted note from the data returned in the article before the update
       var deleteItem = false;
       var deleteIndex = 0;
       for (var i = 0; i < data.note.length; i++) {
@@ -175,6 +175,7 @@ $(document).on("click", ".deletenote", function () {
       if (deleteItem) {
         data.note.splice(deleteIndex, 1);
       }
+      //update the notes display in the modal
       displayNotes(data);
       $("#notes-title").text(`Notes For Article: ${articleId}`);
       $("#notesModal").modal("show");

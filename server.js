@@ -15,11 +15,10 @@ var PORT = 3000;
 // Initialize Express
 var app = express();
 
-// Configure middleware
-
 // Parse request body as JSON
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 // Make public a static folder
 app.use(express.static("public"));
 
@@ -41,20 +40,22 @@ app.get("/saved", function (req, res) {
   res.render("saved");
 });
 
-// A GET route for scraping the echoJS website
+// A GET route for scraping the NPR Technology website
 app.get("/scrape", function (req, res) {
+
+  var count = 0;
 
   // First, we grab the body of the html with axios
   axios.get("https://www.npr.org/sections/technology/").then(function (response) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(response.data);
 
-    // Now, we grab every h2 within an article tag, and do the following:
+    // Now, we grab every div within an item-info class, and do the following:
     $("div .item-info").each(function (i, element) {
       // Save an empty result object
       var result = {};
 
-      // Add the text and href of every link, and save them as properties of the result object
+      // Add the text, summary, and href of every item, and save them as properties of the result object
       result.title = $(this)
         .children("h2")
         .first()
@@ -70,6 +71,7 @@ app.get("/scrape", function (req, res) {
         .first()
         .text();
 
+      //create an article with the info
       db.Article.create(result)
         .then(function (dbArticle) {
           // View the added result in the console
@@ -79,15 +81,16 @@ app.get("/scrape", function (req, res) {
           // If an error occurred, log it
           console.log(err);
         });
+      count++;
     })
 
   }).then(function () {
     // Send a message to the client
-    res.send("Scrape Complete");
+    res.send({countNum: count});
   })
 });
 
-// Route for getting all Articles from the db
+// Route for getting all articles from the db
 app.get("/articles", function (req, res) {
   db.Article.find({}).sort({ _id: -1 }).then(function (dbArticle) {
     res.json(dbArticle);
@@ -97,7 +100,7 @@ app.get("/articles", function (req, res) {
     });
 });
 
-// Route for getting all Articles from the db
+// Route for getting all saved articles from the db
 app.get("/savedArticles", function (req, res) {
   db.Article.find({ saved: true }).sort({ _id: -1 }).then(function (dbArticle) {
     res.json(dbArticle);
@@ -107,7 +110,7 @@ app.get("/savedArticles", function (req, res) {
     });
 });
 
-// Route for grabbing a specific Article by id, populate it with it's note
+// Route for grabbing a specific article by id, populate it with it's note
 app.get("/articles/:id", function (req, res) {
   // Finds one article using the req.params.id,
   // and run the populate method with "note",
@@ -126,25 +129,21 @@ app.get("/articles/:id", function (req, res) {
 app.post("/articles/:id", function (req, res) {
   // Save the new note that gets posted to the Notes collection
   // then find an article from the req.params.id
-  // and update it's "note" property with the _id of the new note
+  // and update it's "note" array property with the _id of the new note
   db.Note.create(req.body)
     .then(function (dbNote) {
       db.Article.findOne({ _id: req.params.id })
         .then(function (dbArticle) {
-          //console.log(dbArticle.note);
-          //console.log(dbArticle.note.isArray());
+          //get the original array
           var noteArray = dbArticle.note;
+          //add the new note id to the array
           noteArray.push(dbNote._id);
-          console.log(noteArray);
+          //update the article with the new array
           return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: noteArray });
         })
         .catch(function (err) {
           res.json(err);
         });
-
-
-
-
     })
     .catch(function (err) {
       res.json(err);
@@ -152,7 +151,7 @@ app.post("/articles/:id", function (req, res) {
 });
 
 app.post("/save/:id", function (req, res) {
-  // Updates the saved value for one article using the req.params.id
+  // Updates the saved value to true for one article using the req.params.id
   db.Article.updateOne({ _id: req.params.id }, { saved: true }, function (dbArticle) {
     res.json(dbArticle);
   })
@@ -162,7 +161,7 @@ app.post("/save/:id", function (req, res) {
 });
 
 app.post("/deletesave/:id", function (req, res) {
-  // Updates the saved value for one article using the req.params.id
+  // Updates the saved value to false for one article using the req.params.id
   db.Article.updateOne({ _id: req.params.id }, { saved: false }, function (dbArticle) {
     res.json(dbArticle);
   })
@@ -172,6 +171,7 @@ app.post("/deletesave/:id", function (req, res) {
 });
 
 app.put("/articles/:id/:deleteId", function (req, res) {
+  //finds an article using req.params.id and deletes the note id given as req.params.deleteId from the note array
   db.Article.findOneAndUpdate({ _id: req.params.id }, { $pullAll: { note: [req.params.deleteId] } })
     .populate("note")
     .then(function (dbArticle) {
@@ -183,6 +183,7 @@ app.put("/articles/:id/:deleteId", function (req, res) {
 });
 
 app.delete("/notes/:id", function (req, res) {
+  //deletes the note from the collection given req.params.id
   db.Note.deleteOne({ _id: req.params.id }, function (dbNote) {
     res.json(dbNote);
   })

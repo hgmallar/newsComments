@@ -17,6 +17,7 @@
 </head>
 
 <body>
+    <!--Navbar -->
     <navbar>
         <nav class="navbar navbar-expand-lg navbar-light">
             <a class="navbar-brand text-white" href="/">Mongo News Scraper</a>
@@ -40,8 +41,10 @@
         </nav>
     </navbar>
 
-    <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
-        <div class="modal-dialog" role="document"> 
+    <!--Modal for displaying the amount of articles added -->
+    <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-body">
                     <p id="modalBody"></p>
@@ -52,6 +55,13 @@
             </div>
         </div>
     </div>
+
+    <!--Jumbotron-->
+    <div class="jumbotron text-center">
+        <h1>Mongo News Scraper</h1>
+        <h2>NPR Technology Edition</h2>
+    </div>
+
 
     {{{body}}}
 
