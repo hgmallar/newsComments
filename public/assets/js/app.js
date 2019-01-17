@@ -1,3 +1,23 @@
+function displayNotes(data) {
+  $("#notesBody").empty();
+  if (data.note) {
+    for (var i = 0; i < data.note.length; i++) {
+      // Place the body of the note in the body textarea
+      let noteP = $("<h6>").text(data.note[i].body);
+      let span = $("<span>");
+      span.addClass("deletenote");
+      span.addClass("float-right");
+      span.html("&times;");
+      span.attr("data-id", data.note[i]._id);
+      noteP.append(span);
+      $("#notesBody").append(noteP);
+    }
+  }
+  else {
+    $("#notesBody").text("No new notes for this article yet.");
+  }
+}
+
 // Grab the articles as a json
 $.getJSON("/articles", function (data) {
   // For each one
@@ -121,16 +141,7 @@ $(document).on("click", ".articlenote", function () {
     .then(function (data) {
       console.log(data);
       // If there's a note in the article
-      if (data.note) {
-        // Place the body of the note in the body textarea
-        $("#notesBody").text(data.note.body);
-        let span = $("<span>");
-        span.addClass("deletenote");
-        span.addClass("float-right");
-        span.html("&times;");
-        span.attr("data-id", data.note._id);
-        $("#notesBody").append(span);
-      }
+      displayNotes(data);
     });
   $(".savenote").attr("data-id", thisId);
   $("#notes-title").text(`Notes For Article: ${thisId}`);
@@ -145,14 +156,26 @@ $(document).on("click", ".deletenote", function () {
   var articleId = $(".savenote").attr("data-id");
   $.ajax({
     method: "PUT",
-    url: "/articles/" + articleId
+    url: "/articles/" + articleId + "/" + thisId
   })
-    .then(function () {
+    .then(function (data) {
       $.ajax({
         method: "DELETE",
         url: "/notes/" + thisId
       })
-      $("#notesBody").text("No new notes for this article yet.");
+      //delete the deleted note from the data
+      var deleteItem = false;
+      var deleteIndex = 0;
+      for (var i = 0; i < data.note.length; i++) {
+        if (data.note[i]._id === thisId) {
+          deleteItem = true;
+          deleteIndex = i;
+        }
+      }
+      if (deleteItem) {
+        data.note.splice(deleteIndex, 1);
+      }
+      displayNotes(data);
       $("#notes-title").text(`Notes For Article: ${articleId}`);
       $("#notesModal").modal("show");
     });

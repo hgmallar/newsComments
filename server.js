@@ -129,10 +129,22 @@ app.post("/articles/:id", function (req, res) {
   // and update it's "note" property with the _id of the new note
   db.Note.create(req.body)
     .then(function (dbNote) {
-      return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: dbNote._id }, { new: true })
-    })
-    .then(function (dbNote) {
-      res.json(dbNote);
+      db.Article.findOne({ _id: req.params.id })
+        .then(function (dbArticle) {
+          //console.log(dbArticle.note);
+          //console.log(dbArticle.note.isArray());
+          var noteArray = dbArticle.note;
+          noteArray.push(dbNote._id);
+          console.log(noteArray);
+          return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: noteArray });
+        })
+        .catch(function (err) {
+          res.json(err);
+        });
+
+
+
+
     })
     .catch(function (err) {
       res.json(err);
@@ -159,10 +171,12 @@ app.post("/deletesave/:id", function (req, res) {
     });
 });
 
-app.put("/articles/:id", function (req, res) {
-  db.Article.updateOne({ note: req.params.id }, { $unset: { note: req.params.id } }, function (dbArticle) {
-    res.json(dbArticle);
-  })
+app.put("/articles/:id/:deleteId", function (req, res) {
+  db.Article.findOneAndUpdate({ _id: req.params.id }, { $pullAll: { note: [req.params.deleteId] } })
+    .populate("note")
+    .then(function (dbArticle) {
+      res.json(dbArticle);
+    })
     .catch(function (err) {
       res.json(err);
     });
