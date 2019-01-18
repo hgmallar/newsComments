@@ -26,9 +26,10 @@ $.getJSON("/articles", function (data) {
   // For each one
   for (var i = 0; i < data.length; i++) {
     // Display the apropos information on the page
-    var div = $("<div>");
+    var div = $("<div class='row'>");
     div.addClass("article").addClass("rounded");
-    div.append("<h4>" + data[i].title + "<button type='button' data-id='" + data[i]._id + "' class='btn btn-secondary saveart float-right'>Save Article</button></h4>");
+    div.append("<h4 class='col-md-10'>" + data[i].title + "</h4>");
+    div.append("<div class='col-md-2 text-center'><button type='button' data-id='" + data[i]._id + "' class='btn btn-secondary saveart float-md-right'>Save Article</button></div>");
     div.append("<hr>");
     div.append("<p data-id='" + data[i]._id + "'>" + data[i].summary + "</p>");
     div.append("<a class='articleLink' href='" + data[i].link + "'>" + data[i].link + "</a>");
@@ -41,9 +42,11 @@ $.getJSON("/savedArticles", function (data) {
   // For each one
   for (var i = 0; i < data.length; i++) {
     // Display the apropos information on the page
-    var div = $("<div>");
+    var div = $("<div class='row'>");
     div.addClass("article").addClass("rounded");
-    div.append("<h4>" + data[i].title + "<button type='button' data-id='" + data[i]._id + "' class='btn btn-secondary deletesave float-right'>Delete From Save</button><button type='button' data-id='" + data[i]._id + "' class='btn btn-secondary articlenote float-right' data-id='" + data[i]._id + "'>Article Notes</button> </h4>");
+    div.append("<h4 class='col-md-8'>" + data[i].title + "</h4>");
+    div.append("<div class='col-md-4 text-center'><button type='button' data-id='" + data[i]._id + "' class='btn btn-secondary deletesave float-md-right mb-md-2'>Delete From Save</button><button type='button' data-id='" + data[i]._id + "' class='btn btn-secondary articlenote float-md-right' data-id='" + data[i]._id + "'>Article Notes</button></div>")
+    div.append("");
     div.append("<hr>");
     div.append("<p data-id='" + data[i]._id + "'>" + data[i].summary + "</p>");
     div.append("<a class='articleLink' href='" + data[i].link + "'>" + data[i].link + "</a>");
