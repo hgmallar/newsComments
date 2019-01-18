@@ -20,7 +20,7 @@
  * Responsive Bootstrap design
 
  ## Video Demonstration Here:
-![Video Demonstration Here](/public/images/demo.gif)
+![Video Demonstration Here](/public/assets/images/newsvideo.gif)
 
 ![frontpage image](/public/assets/images/news.PNG)
 ![adding a note to a saved article image](/public/assets/images/notes.PNG)
