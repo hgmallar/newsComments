@@ -23,7 +23,8 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Connect to the Mongo DB
-var MONGODB_URI = "mongodb://localhost/techNews" || "mongodb://mongolab-adjacent-76880";
+//var MONGODB_URI = "mongodb://localhost/techNews";
+var MONGODB_URI = "mongodb://mongolab-adjacent-76880";
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
 // Handlebars
